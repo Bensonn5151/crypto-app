@@ -1,22 +1,76 @@
-# Crypto Data Engineering Project
-This project is a work-in-progress data engineering pipeline for cryptocurrency data.
-It follows a layered architecture (Bronze → Silver → Gold) for structured, scalable, and reliable data workflows.
+# Crypto App
 
-## Current Progress
-✅ CoinGecko ingestion script (get_crypto_data)
-✅ Data saved into data/bronze/ as JSON (raw layer / bronze layer)
-✅ Project initialized with Git for version control
-✅ Yahoo Finance ingestion added
-✅ CoinDesk ingestion added
-✅ Schema enforcement and transformations implemented (Silver Layer)
+A web application to interact with cryptocurrency data, featuring a PostgreSQL database backend.
 
-## Next Steps
-Store cleaned & transformed data in PostgreSQL (Gold Layer)
-Develop a frontend dashboard to visualize crypto data
-Extend pipeline with ML models for price forecasting & anomaly detection
+## Features
+
+- View, add, and manage cryptocurrency data
+- Secure API endpoints
+- Modern frontend interface
 
 ## Tech Stack
-Python (pandas, requests, yfinance)
-PostgreSQL (planned for Gold Layer)
-Git & GitHub for version control
-Data Architecture: Bronze (raw) → Silver (clean) → Gold (analytics-ready)
+
+- **Frontend:** (React, Vue, or HTML/CSS/JavaScript)
+- **Backend:** Node.js/Express (or Python/Flask/Django)
+- **Database:** PostgreSQL
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js & npm
+- PostgreSQL
+
+### Backend Setup
+
+1. Clone the repo:
+    ```bash
+    git clone https://github.com/Bensonn5151/crypto-app.git
+    cd crypto-app
+    ```
+2. Install dependencies:
+    ```bash
+    npm install
+    ```
+3. Configure PostgreSQL connection in `.env`:
+    ```
+    PGUSER=your_user
+    PGPASSWORD=your_password
+    PGDATABASE=your_db
+    PGHOST=localhost
+    PGPORT=5432
+    ```
+4. Start the backend server:
+    ```bash
+    npm start
+    ```
+
+### Frontend Setup
+
+1. Navigate to the frontend directory (if present):
+    ```bash
+    cd frontend
+    ```
+2. Install dependencies and start the frontend:
+    ```bash
+    npm install
+    npm start
+    ```
+3. Access the app at `http://localhost:3000`
+
+## Usage
+
+- Use the web interface to interact with crypto data stored in PostgreSQL.
+- API endpoints are available for advanced integrations.
+
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first to discuss your ideas.
+
+## License
+
+[MIT](LICENSE)
+
+## Contact
+
+Created by [Bensonn5151](https://github.com/Bensonn5151) - feel free to reach out!
