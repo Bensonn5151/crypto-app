@@ -10,3 +10,14 @@ __pycache__/
 
 # Ignore system files
 .DS_Store
+
+.streamlit/
+
+airflow.cfg
+airflow.db
+logs/
+unittests/
+unused/
+venv/
+frontend/
+__pycache__/
