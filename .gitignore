@@ -21,3 +21,4 @@ unused/
 venv/
 frontend/
 __pycache__/
+simple_auth_manager_passwords.json.generated
