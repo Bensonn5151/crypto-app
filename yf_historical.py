@@ -1,9 +1,13 @@
 import os
 import pandas as pd
 import yfinance as yf
+import psycopg2
+from psycopg2 import sql
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, text, inspect
 
+# -------------------------------------------------------
+# Symbols to track
+# -------------------------------------------------------
 def get_symbols():
     return {
         "BTC-USD": "BTC",
@@ -11,6 +15,9 @@ def get_symbols():
         "SOL-USD": "SOL"
     }
 
+# -------------------------------------------------------
+# Fetch historical data from yfinance
+# -------------------------------------------------------
 def fetch_yfinance_data(symbols):
     all_data = []
     for yf_symbol, short_symbol in symbols.items():
@@ -19,10 +26,14 @@ def fetch_yfinance_data(symbols):
         hist = hist.reset_index()
         hist["Symbol"] = short_symbol
         all_data.append(hist)
+
     historical_df = pd.concat(all_data, ignore_index=True)
     historical_df = historical_df[["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]]
     return historical_df
 
+# -------------------------------------------------------
+# Enforce schema consistency
+# -------------------------------------------------------
 def enforce_schema(df):
     schema = {
         "Symbol": "string",
@@ -41,34 +52,43 @@ def enforce_schema(df):
                 df[col] = df[col].astype(dtype, errors="ignore")
     return df
 
+# -------------------------------------------------------
+# Load database credentials
+# -------------------------------------------------------
 load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
 
 def load_db_env():
-    load_dotenv()
-    db_params = {
+    return {
         "DB_HOST": os.getenv("DB_HOST"),
         "DB_PORT": os.getenv("DB_PORT", "5432"),
         "DB_NAME": os.getenv("DB_NAME"),
         "DB_USERNAME": os.getenv("DB_USERNAME"),
         "DB_PASSWORD": os.getenv("DB_PASSWORD"),
     }
-    return db_params
 
-def get_engine(db_params):
-    url = f'postgresql://{db_params["DB_USERNAME"]}:{db_params["DB_PASSWORD"]}@{db_params["DB_HOST"]}:{db_params["DB_PORT"]}/{db_params["DB_NAME"]}'
-    return create_engine(url)
+# -------------------------------------------------------
+# Database utilities with psycopg2
+# -------------------------------------------------------
+def get_connection(db_params):
+    return psycopg2.connect(
+        host=db_params["DB_HOST"],
+        port=db_params["DB_PORT"],
+        dbname=db_params["DB_NAME"],
+        user=db_params["DB_USERNAME"],
+        password=db_params["DB_PASSWORD"]
+    )
 
-def test_db_connection(engine):
+def test_db_connection(conn):
     try:
-        with engine.connect() as conn:
-            result = conn.execute(text("SELECT version();"))
-            print("Connected to:", result.scalar())
+        with conn.cursor() as cur:
+            cur.execute("SELECT version();")
+            print("Connected to:", cur.fetchone()[0])
             return True
     except Exception as e:
         print("Connection failed:", e)
         return False
 
-def create_table(engine):
+def create_table(conn):
     create_sql = """
         DROP TABLE IF EXISTS yfinance_historical;
         CREATE TABLE yfinance_historical (
@@ -81,41 +101,69 @@ def create_table(engine):
             Volume BIGINT
         );
     """
-    with engine.begin() as conn:
-        conn.execute(text(create_sql))
+    with conn.cursor() as cur:
+        cur.execute(create_sql)
+    conn.commit()
 
-def insert_data(engine, df):
-    columns_to_keep = ["Symbol", "Date", "Open", "High", "Low", "Close", "Volume"]
-    df_subset = df[columns_to_keep].copy()
-    df_subset.columns = [col.lower() for col in df_subset.columns]
-    df_subset.to_sql(
-        "yfinance_historical",
-        con=engine,
-        if_exists="append",
-        index=False
-    )
+def insert_data(conn, df):
+    insert_sql = sql.SQL("""
+        INSERT INTO yfinance_historical (Symbol, Date, Open, High, Low, Close, Volume)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """)
 
-def list_tables(engine):
-    inspector = inspect(engine)
-    print(inspector.get_table_names())
+    # Ensure each column is the right Python type
+    df = df.copy()
+    df["Symbol"] = df["Symbol"].astype(str)
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce")   # safe datetime
+    df["Open"] = df["Open"].astype(float)
+    df["High"] = df["High"].astype(float)
+    df["Low"] = df["Low"].astype(float)
+    df["Close"] = df["Close"].astype(float)
+    df["Volume"] = df["Volume"].astype(float)   # float avoids numpy.int64 issue
 
+    # Replace NaN with None (Postgres NULL)
+    rows = df.where(pd.notnull(df), None).values.tolist()
+
+    with conn.cursor() as cur:
+        cur.executemany(insert_sql.as_string(conn), rows)  # batch insert
+    conn.commit()
+
+
+def list_tables(conn):
+    with conn.cursor() as cur:
+        cur.execute("""SELECT table_name 
+                       FROM information_schema.tables 
+                       WHERE table_schema='public';""")
+        print("Tables:", [t[0] for t in cur.fetchall()])
+
+# -------------------------------------------------------
+# Main
+# -------------------------------------------------------
 def main():
     symbols = get_symbols()
     print("Fetching historical data...")
     historical_df = fetch_yfinance_data(symbols)
+
     print("Enforcing schema...")
     silver_historical_df = enforce_schema(historical_df)
+
     db_params = load_db_env()
-    engine = get_engine(db_params)
+    conn = get_connection(db_params)
+
     print("Testing DB connection...")
-    if not test_db_connection(engine):
+    if not test_db_connection(conn):
         return
+
     print("Creating table...")
-    create_table(engine)
+    create_table(conn)
+
     print("Inserting data...")
-    insert_data(engine, silver_historical_df)
+    insert_data(conn, silver_historical_df)
+
     print("Available tables:")
-    list_tables(engine)
+    list_tables(conn)
+
+    conn.close()
     print("Done.")
 
 if __name__ == "__main__":
