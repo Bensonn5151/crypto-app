@@ -1,76 +1,84 @@
-# Crypto App
+# Crypto-App
 
-A web application to interact with cryptocurrency data, featuring a PostgreSQL database backend.
+A data engineering and analytics project for ingesting, transforming, and visualizing cryptocurrency market data using Python, Airflow, Streamlit, and PostgreSQL.
 
 ## Features
 
-- View, add, and manage cryptocurrency data
-- Secure API endpoints
-- Modern frontend interface
+- Fetches historical and hourly price data for BTC, ETH, and SOL from Yahoo Finance using `yfinance`.
+- Supports additional sources like Coingecko.
+- ETL scripts for schema enforcement and loading data into PostgreSQL.
+- Automated pipelines using Apache Airflow for scheduled data updates (hourly/daily).
+- Interactive dashboards built with Streamlit for exploring historical price and volume trends.
+- Jupyter notebooks for ad-hoc analysis and data ingestion.
 
 ## Tech Stack
 
-- **Frontend:** (React, Vue, or HTML/CSS/JavaScript)
-- **Backend:** Node.js/Express (or Python/Flask/Django)
-- **Database:** PostgreSQL
+- **Python**: Data ingestion, ETL, and analytics
+- **PostgreSQL**: Database for storing crypto price data
+- **Apache Airflow**: Workflow orchestration and scheduling
+- **Streamlit**: Data visualization dashboard
+- **Jupyter Notebook**: Exploratory analysis and prototyping
+
+## Directory Structure
+
+```
+crypto-app/
+├── dags/                  # Airflow DAGs for scheduled pipelines
+│   ├── yf_hourly_dag.py
+│   ├── yf_historical_dag.py
+├── yf_hourly.py           # Script for hourly Yahoo Finance data ingestion
+├── yf_historical.py       # Script for historical Yahoo Finance data ingestion
+├── coingecko_ingest.ipynb # Notebook for Coingecko data ingestion
+├── streamlit_app.py       # Streamlit dashboard app
+├── requirements.txt       # Python dependencies
+├── .env                   # Environment variables for DB credentials
+
 
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js & npm
+- Python 3.9+
 - PostgreSQL
 
-### Backend Setup
+### Setup
 
 1. Clone the repo:
     ```bash
-    git clone https://github.com/Bensonn5151/crypto-app.git
+    git clone <repo-url>
     cd crypto-app
     ```
-2. Install dependencies:
+2. Create and activate a Python virtual environment:
     ```bash
-    npm install
+    python3 -m venv venv
+    source venv/bin/activate
     ```
-3. Configure PostgreSQL connection in `.env`:
-    ```
-    PGUSER=your_user
-    PGPASSWORD=your_password
-    PGDATABASE=your_db
-    PGHOST=localhost
-    PGPORT=5432
-    ```
-4. Start the backend server:
+3. Install dependencies:
     ```bash
-    npm start
+    pip install -r requirements.txt
     ```
+4. Configure environment variables:
+    - Copy `.env.example` to `.env` and update with your PostgreSQL credentials.
 
-### Frontend Setup
-
-1. Navigate to the frontend directory (if present):
+5. (Optional) Initialize Airflow for scheduled pipelines:
     ```bash
-    cd frontend
+    export AIRFLOW_HOME=$(pwd)
+    airflow db init
+    airflow webserver &
+    airflow scheduler &
     ```
-2. Install dependencies and start the frontend:
-    ```bash
-    npm install
-    npm start
-    ```
-3. Access the app at `http://localhost:3000`
 
 ## Usage
 
-- Use the web interface to interact with crypto data stored in PostgreSQL.
-- API endpoints are available for advanced integrations.
+- **Run ETL scripts manually:**
+    ```bash
+    python yf_hourly.py
+    python yf_historical.py
+    ```
+- **Trigger Airflow DAGs:**
+    - Access Airflow UI at [http://localhost:8080](http://localhost:8080) and trigger DAGs as needed.
+- **Start Streamlit dashboard:**
+    ```bash
+    streamlit run streamlit_app.py
+    ```
 
-## Contributing
 
-Pull requests are welcome. For major changes, please open an issue first to discuss your ideas.
-
-## License
-
-[MIT](LICENSE)
-
-## Contact
-
-Created by [Bensonn5151](https://github.com/Bensonn5151) - feel free to reach out!
