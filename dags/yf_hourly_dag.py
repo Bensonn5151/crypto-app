@@ -30,7 +30,11 @@ with DAG(
         'email_on_retry': False,
     },
     description='Fetch hourly Yahoo Finance data',
+<<<<<<< HEAD
     schedule='0 * * * *',  # Cron style: every hour at minute 0
+=======
+    schedule=None,
+>>>>>>> bdbd84168ca4d4cbed8b7df6b06f5054036eeb01
     start_date=datetime(2025, 9, 15),
     catchup=False,
     tags=['yfinance', 'crypto', 'hourly'],
