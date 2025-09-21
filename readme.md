@@ -1,6 +1,6 @@
 # Crypto-App
 
-A data engineering and analytics project for ingesting, transforming, and visualizing cryptocurrency market data using **Python, Apache Airflow, Streamlit, and PostgreSQL**.
+A full stack data engineering and analytics project for ingesting, transforming, and visualizing cryptocurrency market data using **Python,Next.js, Apache Airflow, Streamlit, and PostgreSQL**.
 
 ## 🚀 Features
 
@@ -21,6 +21,7 @@ A data engineering and analytics project for ingesting, transforming, and visual
 
 ## 📂 Directory Structure
 
+```
 crypto-app/
 ├── dags/ # Airflow DAGs for pipelines
 │ ├── yf_hourly_dag.py
@@ -31,7 +32,7 @@ crypto-app/
 ├── streamlit_app.py # Streamlit dashboard
 ├── requirements.txt # Python dependencies
 ├── .env # Environment variables
-
+```
 ## ⚙️ Getting Started
 
 ### ✅ Prerequisites
