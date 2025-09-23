@@ -4,7 +4,7 @@ A full stack data engineering and analytics project for ingesting, transforming,
 
 ## 🚀 Features
 
-- Fetches historical and hourly price data for BTC, ETH, and SOL from Yahoo Finance using `yfinance`
+- Fetches marjet data  from Yahoo Finance, CoinDesk, coin gecko
 - Supports additional data sources like Coingecko
 - ETL scripts for schema enforcement and loading data into PostgreSQL
 - Automated pipelines using **Apache Airflow** for scheduled updates (hourly/daily)
