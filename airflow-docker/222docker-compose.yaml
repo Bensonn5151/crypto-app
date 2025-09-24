@@ -1,0 +1,138 @@
+x-airflow-common:
+  &airflow-common
+  image: apache/airflow:3.0.6
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 16
+    AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 16
+    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 10
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 300
+    AIRFLOW__SCHEDULER__PARSING_PROCESSES: 2
+    # Remove deprecated RBAC setting
+    _AIRFLOW_WWW_USER_USERNAME: airflow
+    _AIRFLOW_WWW_USER_PASSWORD: airflow
+  volumes:
+    - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/.env:/opt/airflow/.env
+    - /Users/apple/Desktop/DEV/PORTFOLIO/crypto-app:/opt/airflow/crypto-app
+  user: "50000:0"
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_started
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 50
+      start_period: 30s
+
+  airflow-webserver:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  airflow-worker:
+    <<: *airflow-common
+    command: celery worker
+
+  airflow-triggerer:
+    <<: *airflow-common
+    command: triggerer
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    user: "0:0"  # Run as root for initialization
+    command:
+      - -c
+      - |
+        echo "Starting Airflow initialization..."
+        
+        # Initialize the database
+        airflow db migrate
+        echo "Database migration completed"
+        
+        # Try to create default connections (may fail, that's ok)
+        airflow connections create-default-connections || echo "Default connections creation failed or already exist"
+        
+        # Create admin user using the standalone method since 'users' command doesn't exist
+        python -c "
+        from airflow import settings
+        from airflow.models import User
+        from airflow.utils.db import create_session
+        
+        with create_session() as session:
+            user = session.query(User).filter(User.username == 'admin').first()
+            if not user:
+                user = User(
+                    username='admin',
+                    email='admin@example.com',
+                    first_name='Admin',
+                    last_name='User',
+                    is_active=True,
+                    is_superuser=True
+                )
+                user.set_password('admin')
+                session.add(user)
+                session.commit()
+                print('Admin user created successfully')
+            else:
+                print('Admin user already exists')
+        "
+        
+        echo "Airflow initialization completed"
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+    restart: "no"
+
+volumes:
+  postgres-db-volume:
