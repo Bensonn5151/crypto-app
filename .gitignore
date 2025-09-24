@@ -1,8 +1,10 @@
 # Ignore environment files
 .env
+airflow-docker/.env
+.streamlit/
 
-# Ignore Jupyter checkpoints
-.ipynb_checkpoints/
+
+
 
 # Ignore Python cache
 __pycache__/
@@ -11,10 +13,27 @@ __pycache__/
 # Ignore system files
 .DS_Store
 
-.streamlit/
-
+#ignore airflow files
 airflow.cfg
 airflow.db
+simple_auth_manager_passwords.json.generated
+airflow-docker/222docker-compose.yml
+airflow-docker/dags/__pycache__
+airflow-docker/logs
+airflow-docker/plugins
+
+
+
+venv/
+unused/
+frontend/
+clean-crypto-app/ 
+
+
+
+
+
+
 logs/
 unittests/
 unused/
@@ -22,7 +41,7 @@ venv/
 frontend/
 __pycache__/
 
-simple_auth_manager_passwords.json.generated
-clean-crypto-app/ 
+
+
 
 

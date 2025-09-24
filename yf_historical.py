@@ -58,13 +58,23 @@ def enforce_schema(df):
 load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
 
 def load_db_env():
-    return {
-        "DB_HOST": os.getenv("DB_HOST"),
-        "DB_PORT": os.getenv("DB_PORT", "5432"),
-        "DB_NAME": os.getenv("DB_NAME"),
-        "DB_USERNAME": os.getenv("DB_USERNAME"),
-        "DB_PASSWORD": os.getenv("DB_PASSWORD"),
+    db_config = {
+        "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
+        "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
+        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker
+        "DB_PORT": os.getenv('DB_PORT','5432'),
+        "DB_NAME": os.getenv('DB_NAME','crypto_app')
     }
+    
+    print("=== ACTUAL DATABASE CONFIGURATION ===")
+    print(f"Username: {db_config['DB_USERNAME']}")
+    print(f"Password: {'*' * len(db_config['DB_PASSWORD']) if db_config['DB_PASSWORD'] else 'None'}")
+    print(f"Host: {db_config['DB_HOST']}")
+    print(f"Port: {db_config['DB_PORT']}")
+    print(f"Database: {db_config['DB_NAME']}")
+    print("=====================================")
+    
+    return db_config
 
 # -------------------------------------------------------
 # Database utilities with psycopg2

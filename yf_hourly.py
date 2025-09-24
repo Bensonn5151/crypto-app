@@ -56,20 +56,57 @@ def enforce_schema(df):
 # -------------------------
 # 4. DB Config
 # -------------------------
-load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
+#load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
+
+load_dotenv(dotenv_path="/opt/airflow/.env")
+
+
+# def load_db_env():
+#     return {
+#         "DB_USERNAME": os.getenv('DB_USERNAME'),
+#         "DB_PASSWORD": os.getenv('DB_PASSWORD'),
+#         "DB_HOST": os.getenv('DB_HOST'),
+#         "DB_PORT": os.getenv('DB_PORT'),
+#         "DB_NAME": os.getenv('DB_NAME')
+#     }
 
 def load_db_env():
-    return {
-        "DB_USERNAME": os.getenv('DB_USERNAME'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD'),
-        "DB_HOST": os.getenv('DB_HOST'),
-        "DB_PORT": os.getenv('DB_PORT'),
-        "DB_NAME": os.getenv('DB_NAME')
+    db_config = {
+        "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
+        "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
+        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker
+        "DB_PORT": os.getenv('DB_PORT','5432'),
+        "DB_NAME": os.getenv('DB_NAME','crypto_app')
     }
+    
+    print("=== ACTUAL DATABASE CONFIGURATION ===")
+    print(f"Username: {db_config['DB_USERNAME']}")
+    print(f"Password: {'*' * len(db_config['DB_PASSWORD']) if db_config['DB_PASSWORD'] else 'None'}")
+    print(f"Host: {db_config['DB_HOST']}")
+    print(f"Port: {db_config['DB_PORT']}")
+    print(f"Database: {db_config['DB_NAME']}")
+    print("=====================================")
+    
+    return db_config
+
+# def get_engine(db_params):
+#     url = f'postgresql://{db_params["DB_USERNAME"]}:{db_params["DB_PASSWORD"]}@{db_params["DB_HOST"]}:{db_params["DB_PORT"]}/{db_params["DB_NAME"]}'
+#     return create_engine(url)
 
 def get_engine(db_params):
-    url = f'postgresql://{db_params["DB_USERNAME"]}:{db_params["DB_PASSWORD"]}@{db_params["DB_HOST"]}:{db_params["DB_PORT"]}/{db_params["DB_NAME"]}'
-    return create_engine(url)
+    try:
+        # Validate port is integer
+        port = int(db_params["DB_PORT"])
+        
+        url = f'postgresql://{db_params["DB_USERNAME"]}:{db_params["DB_PASSWORD"]}@{db_params["DB_HOST"]}:{port}/{db_params["DB_NAME"]}'
+        print(f"Database URL: postgresql://{db_params['DB_USERNAME']}:****@{db_params['DB_HOST']}:{port}/{db_params['DB_NAME']}")
+        
+        engine = create_engine(url)
+        return engine
+    except ValueError as e:
+        raise ValueError(f"Invalid database port: {db_params['DB_PORT']}") from e
+    except Exception as e:
+        raise Exception(f"Failed to create database engine: {e}") from e
 
 # -------------------------
 # 5. DB Functions

@@ -11,10 +11,10 @@ load_dotenv()
 
 # --- Postgres details ---
 DB_USERNAME = os.getenv('DB_USERNAME', 'postgres')
-DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
+DB_PASSWORD = os.getenv('DB_PASSWORD', 'bens')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_PORT = os.getenv('DB_PORT', '5432')
-DB_NAME = os.getenv('DB_NAME', 'ben')
+DB_NAME = os.getenv('DB_NAME', 'crypto_app')
 
 
 PG_URL = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -83,7 +83,11 @@ def enforce_schema(df):
         "atl_change_percentage": "float64",
         "atl_date": "string",
         "roi": "string",
-        "last_updated": "string"
+        "last_updated": "string",
+        "price_change_percentage_1h_in_currency": "float64",
+        "price_change_percentage_24h_in_currency": "float64",
+        "price_change_percentage_7d_in_currency": "float64",
+        "price_change_percentage_30d_in_currency": "float64"
     }
     for col, dtype in schema.items():
         if col in df.columns:
@@ -122,7 +126,12 @@ def create_postgres_table(engine, table_name="silver_coingecko"):
         atl_change_percentage DOUBLE PRECISION,
         atl_date TIMESTAMP,
         roi TEXT,
-        last_updated TIMESTAMP
+        last_updated TIMESTAMP,
+        price_change_percentage_1h_in_currency DOUBLE PRECISION,
+        price_change_percentage_24h_in_currency DOUBLE PRECISION,
+        price_change_percentage_7d_in_currency DOUBLE PRECISION,
+        price_change_percentage_30d_in_currency DOUBLE PRECISION
+
     );
     """
     with engine.connect() as conn:
