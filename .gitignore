@@ -27,6 +27,7 @@ airflow-docker/plugins
 venv/
 unused/
 frontend/
+frontend-legacy/
 clean-crypto-app/ 
 
 
@@ -40,8 +41,5 @@ unused/
 venv/
 frontend/
 __pycache__/
-
-
-
-
-
+password.json
+setup.sh
