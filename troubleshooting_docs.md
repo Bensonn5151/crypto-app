@@ -5,7 +5,6 @@ This document records specific errors encountered and their solutions for future
 ## Error Log
 
 ### 🚨 Error 001: "Data not visible in PostgreSQL after successful DAG run"
-**Date**: 2024-09-28
 **Symptoms**: 
 - Airflow logs show: `✅ Data ingested to Postgres table 'silver_coingecko'`
 - No data visible in pgAdmin
@@ -33,7 +32,6 @@ Verification:
 
 ### 🚨 Error 002: "Connection not found" in Airflow
 
-Date: 2024-09-28
 Symptoms:
 
 DAG fails with connection errors
