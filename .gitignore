@@ -2,9 +2,7 @@
 .env
 airflow-docker/.env
 .streamlit/
-
-
-
+venv/
 
 # Ignore Python cache
 __pycache__/
@@ -12,8 +10,8 @@ __pycache__/
 
 # Ignore system files
 .DS_Store
-
 #ignore airflow files
+
 airflow.cfg
 airflow.db
 simple_auth_manager_passwords.json.generated
@@ -22,24 +20,12 @@ airflow-docker/dags/__pycache__
 airflow-docker/logs
 airflow-docker/plugins
 
-
-
-venv/
+#Ignore folders
 unused/
 frontend/
 frontend-legacy/
 clean-crypto-app/ 
 
-
-
-
-
-
-logs/
-unittests/
-unused/
-venv/
-frontend/
-__pycache__/
+#Ignore files
 password.json
-setup.sh
+yf_hourly_streamlit.py

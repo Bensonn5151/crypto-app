@@ -14,11 +14,16 @@ def load_db_env():
     """Load database parameters from .env file."""
     load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
     return {
-        "DB_HOST": os.getenv("DB_HOST"),
-        "DB_PORT": os.getenv("DB_PORT", "5432"),
-        "DB_NAME": os.getenv("DB_NAME"),
-        "DB_USERNAME": os.getenv("DB_USERNAME"),
-        "DB_PASSWORD": os.getenv("DB_PASSWORD"),
+        # "DB_HOST": os.getenv("DB_HOST"),
+        # "DB_PORT": os.getenv("DB_PORT", "5432"),
+        # "DB_NAME": os.getenv("DB_NAME"),
+        # "DB_USERNAME": os.getenv("DB_USERNAME"),
+        # "DB_PASSWORD": os.getenv("DB_PASSWORD"),
+        "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
+        "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
+        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker
+        "DB_PORT": os.getenv('DB_PORT','5434'),
+        "DB_NAME": os.getenv('DB_NAME','crypto_app')
     }
 
 @st.cache_resource(ttl=3600)
@@ -34,18 +39,20 @@ def get_engine(db_params: dict):
 # Data fetching
 # -------------------------------
 @st.cache_data(ttl=600, show_spinner="Loading hourly data...")
-def fetch_hourly_data(symbol: str) -> pd.DataFrame:
+def fetch_hourly_data(_engine, symbol: str) -> pd.DataFrame:
     """Fetch hourly price data for a given symbol from the database."""
     query = """
-        SELECT symbol, date, hour, open, high, low, close, volume
+        SELECT symbol, datetime, open, high, low, close, volume
         FROM yfinance_hourly
         WHERE symbol = :symbol
-        ORDER BY date DESC, hour DESC
+        ORDER BY datetime DESC
         LIMIT 1000
     """
     try:
+        # Alternative: Use connection explicitly with text() for proper parameter binding
         with _engine.connect() as conn:
-            df = pd.read_sql(query, _engine, params={"symbol": symbol})
+            result = conn.execute(text(query), {"symbol": symbol})
+            df = pd.DataFrame(result.fetchall(), columns=result.keys())
         return df
     except Exception as e:
         st.error(f"Error fetching hourly data: {e}")
@@ -79,7 +86,7 @@ def test_connection(engine):
     except Exception as e:
         st.sidebar.error(f"Connection failed: {str(e)}")
 
-def display_data_panel(df: pd.DataFrame, symbol: str):
+def display_data_panel(df: pd.DataFrame, symbol: str, engine):
     """Show latest hourly data, price chart, and volume chart."""
     col1, col2 = st.columns([1, 2])
 
@@ -93,18 +100,18 @@ def display_data_panel(df: pd.DataFrame, symbol: str):
 
         if st.button("🔄 Refresh Hourly Data"):
             st.cache_data.clear()
-            st.session_state.hourly_data = fetch_hourly_data(symbol)
+            st.session_state.hourly_data = fetch_hourly_data(engine, symbol)
             st.rerun()
 
     with col2:
         st.subheader("Hourly Price History")
-        plot_data = df.copy().sort_values(["date", "hour"], ascending=True)
+        plot_data = df.copy().sort_values(["datetime", "hour"], ascending=True)
 
         fig = px.line(
             plot_data,
             x="hour",
             y="close",
-            color="date",
+            color="datetime",
             title=f"{symbol} Hourly Price History",
             labels={"close": "Price (USD)", "hour": "Hour"},
             template="plotly_dark",
@@ -123,7 +130,7 @@ def display_data_panel(df: pd.DataFrame, symbol: str):
             plot_data,
             x="hour",
             y="volume",
-            color="date",
+            color="datetime",
             labels={"volume": "Volume (USD)", "hour": "Hour"},
             color_continuous_scale="blues",
         )
@@ -159,29 +166,30 @@ def show_debug_info(db_params: dict, df: pd.DataFrame):
 # Main App
 # -------------------------------
 def main():
-    global _engine  # make available inside fetch_hourly_data
     show_title_and_description()
 
     db_params = load_db_env()
-    _engine = get_engine(db_params)
+    engine = get_engine(db_params)
 
     symbol = st.sidebar.selectbox("Symbol", ["BTC", "ETH", "SOL"], index=0)
 
     if st.sidebar.button("🔌 Test Connection"):
-        test_connection(_engine)
+        test_connection(engine)
 
     if (
         "hourly_data" not in st.session_state
         or st.session_state.get("symbol") != symbol
+        or st.session_state.get("engine_hash") != hash(str(engine))
     ):
         with st.spinner("Loading initial hourly data..."):
-            st.session_state.hourly_data = fetch_hourly_data(symbol)
+            st.session_state.hourly_data = fetch_hourly_data(engine, symbol)
             st.session_state.symbol = symbol
+            st.session_state.engine_hash = hash(str(engine))
 
     df = st.session_state.hourly_data
 
     if not df.empty:
-        display_data_panel(df, symbol)
+        display_data_panel(df, symbol, engine)
     else:
         st.warning("No hourly data available. Please check your database connection and query.")
 
