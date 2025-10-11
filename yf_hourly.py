@@ -71,23 +71,24 @@ load_dotenv(dotenv_path="/opt/airflow/.env")
 #     }
 
 def load_db_env():
-    db_config = {
-        "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
-        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker, localhost if running locally
-        "DB_PORT": os.getenv('DB_PORT','5432'), #5434 if local
-        "DB_NAME": os.getenv('DB_NAME','crypto_app')
+    """Load database parameters depending on environment."""
+    # Try .env.local first (for host)
+    local_env = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env.local"
+    docker_env = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env"
+
+    if os.path.exists(local_env):
+        load_dotenv(dotenv_path=local_env)
+    else:
+        load_dotenv(dotenv_path=docker_env)
+
+    return {
+        "DB_USERNAME": os.getenv('DB_USERNAME', 'postgres'),
+        "DB_PASSWORD": os.getenv('DB_PASSWORD', 'bens'),
+        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
+        "DB_PORT": os.getenv('DB_PORT', '5434'),
+        "DB_NAME": os.getenv('DB_NAME', 'crypto_app')
     }
-    
-    print("=== ACTUAL DATABASE CONFIGURATION ===")
-    print(f"Username: {db_config['DB_USERNAME']}")
-    print(f"Password: {'*' * len(db_config['DB_PASSWORD']) if db_config['DB_PASSWORD'] else 'None'}")
-    print(f"Host: {db_config['DB_HOST']}")
-    print(f"Port: {db_config['DB_PORT']}")
-    print(f"Database: {db_config['DB_NAME']}")
-    print("=====================================")
-    
-    return db_config
+
 
 # def get_engine(db_params):
 #     url = f'postgresql://{db_params["DB_USERNAME"]}:{db_params["DB_PASSWORD"]}@{db_params["DB_HOST"]}:{db_params["DB_PORT"]}/{db_params["DB_NAME"]}'
