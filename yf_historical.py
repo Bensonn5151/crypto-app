@@ -108,7 +108,7 @@ def load_db_env():
         "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
         "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
         "DB_HOST": os.getenv('DB_HOST','postgres'),
-        "DB_PORT": os.getenv('DB_PORT','5434'),
+        "DB_PORT": os.getenv('DB_PORT','5432'), #5434 if local
         "DB_NAME": os.getenv('DB_NAME','crypto_app')
     }
     
