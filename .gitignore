@@ -3,6 +3,7 @@
 airflow-docker/.env
 .streamlit/
 venv/
+.env.local
 
 # Ignore Python cache
 __pycache__/

@@ -11,21 +11,23 @@ from dotenv import load_dotenv
 # Database utilities
 # -------------------------------
 def load_db_env():
-    """Load database parameters from .env file."""
-    load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
-    return {
-        # "DB_HOST": os.getenv("DB_HOST"),
-        # "DB_PORT": os.getenv("DB_PORT", "5432"),
-        # "DB_NAME": os.getenv("DB_NAME"),
-        # "DB_USERNAME": os.getenv("DB_USERNAME"),
-        # "DB_PASSWORD": os.getenv("DB_PASSWORD"),
-        "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
-        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker
-        "DB_PORT": os.getenv('DB_PORT','5434'),
-        "DB_NAME": os.getenv('DB_NAME','crypto_app')
-    }
+    """Load database parameters depending on environment."""
+    # Try .env.local first (for host)
+    local_env = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env.local"
+    docker_env = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env"
 
+    if os.path.exists(local_env):
+        load_dotenv(dotenv_path=local_env)
+    else:
+        load_dotenv(dotenv_path=docker_env)
+
+    return {
+        "DB_USERNAME": os.getenv('DB_USERNAME', 'postgres'),
+        "DB_PASSWORD": os.getenv('DB_PASSWORD', 'bens'),
+        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
+        "DB_PORT": os.getenv('DB_PORT', '5434'),
+        "DB_NAME": os.getenv('DB_NAME', 'crypto_app')
+    }
 @st.cache_resource(ttl=3600)
 def get_engine(db_params: dict):
     """Create and cache SQLAlchemy engine."""
