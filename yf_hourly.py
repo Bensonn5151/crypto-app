@@ -74,8 +74,8 @@ def load_db_env():
     db_config = {
         "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
         "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
-        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker
-        "DB_PORT": os.getenv('DB_PORT','5432'),
+        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker, localhost if running locally
+        "DB_PORT": os.getenv('DB_PORT','5434'),
         "DB_NAME": os.getenv('DB_NAME','crypto_app')
     }
     
@@ -123,8 +123,8 @@ def test_db_connection(engine):
 
 def create_table(engine):
     create_sql = """
-        DROP TABLE IF EXISTS yfinance_hourly;
-        CREATE TABLE yfinance_hourly (
+        -- DROP TABLE IF EXISTS yfinance_hourly;
+        CREATE TABLE IF NOT EXISTS yfinance_hourly (
             Symbol VARCHAR(10),
             Datetime TIMESTAMP,
             Open FLOAT,
