@@ -11,14 +11,15 @@ from dotenv import load_dotenv
 # Database utilities
 # -------------------------------
 def load_db_env():
-    """Load database parameters from .env file."""
+    """Load DB settings for Streamlit (running outside Docker)."""
     load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
+
     return {
-        "DB_USERNAME": os.getenv('DB_USERNAME','postgres'),
-        "DB_PASSWORD": os.getenv('DB_PASSWORD','bens'),
-        "DB_HOST": os.getenv('DB_HOST','postgres'),  # Default to 'postgres' for Docker
-        "DB_PORT": os.getenv('DB_PORT','5434'),
-        "DB_NAME": os.getenv('DB_NAME','crypto_app')
+        "DB_USERNAME": os.getenv("DB_USERNAME", "postgres"),
+        "DB_PASSWORD": os.getenv("DB_PASSWORD", "bens"),
+        "DB_HOST": "localhost",  # 👈 force local host
+        "DB_PORT": "5434",       # 👈 use mapped port
+        "DB_NAME": os.getenv("DB_NAME", "crypto_app"),
     }
 
 @st.cache_resource(ttl=3600)
@@ -53,10 +54,10 @@ def fetch_historical_data(_engine, symbol: str) -> pd.DataFrame:
             if df.empty:
                 st.info("No data in yfinance_historical, trying yfinance_hourly...")
                 query_hourly = """
-                    SELECT symbol, datetime, open, high, low, close, volume
-                    FROM yfinance_hourly
+                    SELECT symbol, date, open, high, low, close, volume,created_at as datetime
+                    FROM yfinance_historical
                     WHERE symbol = :symbol
-                    ORDER BY datetime DESC
+                    ORDER BY date DESC
                     LIMIT 1000
                 """
                 result = conn.execute(text(query_hourly), {"symbol": symbol})
