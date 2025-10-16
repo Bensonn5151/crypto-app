@@ -131,10 +131,10 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
         st.subheader("Hourly Trading Volume")
         fig_vol = px.bar(
             plot_data,
-            x="hour",
+            x="datetime",
             y="volume",
             color="datetime",
-            labels={"volume": "Volume (USD)", "hour": "Hour"},
+            labels={"volume": "Volume (USD)", "datetime": "Hour"},
             color_continuous_scale="blues",
         )
         st.plotly_chart(fig_vol, use_container_width=True)
@@ -147,8 +147,8 @@ def show_sidebar_status(df: pd.DataFrame):
 
     if not df.empty:
         st.sidebar.markdown(
-            f"**Time range:** {df['date'].min().strftime('%Y-%m-%d')} "
-            f"to {df['date'].max().strftime('%Y-%m-%d')}"
+            f"**Time range:** {df['datetime'].min().strftime('%Y-%m-%d')} "
+            f"to {df['datetime'].max().strftime('%Y-%m-%d')}"
         )
 
 def show_debug_info(db_params: dict, df: pd.DataFrame):
