@@ -28,6 +28,7 @@ def load_db_env():
         "DB_PORT": os.getenv('DB_PORT', '5434'),
         "DB_NAME": os.getenv('DB_NAME', 'crypto_app')
     }
+
 @st.cache_resource(ttl=3600)
 def get_engine(db_params: dict):
     """Create and cache SQLAlchemy engine."""
@@ -107,19 +108,19 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
 
     with col2:
         st.subheader("Hourly Price History")
-        plot_data = df.copy().sort_values(["datetime", "hour"], ascending=True)
+        plot_data = df.copy().sort_values(["datetime"], ascending=True)
 
         fig = px.line(
             plot_data,
-            x="hour",
+            x="datetime",
             y="close",
             color="datetime",
             title=f"{symbol} Hourly Price History",
-            labels={"close": "Price (USD)", "hour": "Hour"},
+            labels={"close": "Price (USD)", "datetime": "datetime"},
             template="plotly_dark",
         )
         fig.add_scatter(
-            x=plot_data["hour"],
+            x=plot_data["datetime"],
             y=plot_data["close"].rolling(24).mean(),
             mode="lines",
             name="24-hour MA",

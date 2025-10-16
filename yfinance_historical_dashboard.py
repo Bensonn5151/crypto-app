@@ -11,15 +11,22 @@ from dotenv import load_dotenv
 # Database utilities
 # -------------------------------
 def load_db_env():
-    """Load DB settings for Streamlit (running outside Docker)."""
-    load_dotenv(dotenv_path="/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env")
+    """Load database parameters depending on environment."""
+    # Try .env.local first (for host)
+    local_env = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env.local"
+    #docker_env = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app/.env"
+
+    if os.path.exists(local_env):
+        load_dotenv(dotenv_path=local_env)
+    # else:
+    #     load_dotenv(dotenv_path=docker_env)
 
     return {
-        "DB_USERNAME": os.getenv("DB_USERNAME", "postgres"),
-        "DB_PASSWORD": os.getenv("DB_PASSWORD", "bens"),
-        "DB_HOST": "localhost",  # 👈 force local host
-        "DB_PORT": "5434",       # 👈 use mapped port
-        "DB_NAME": os.getenv("DB_NAME", "crypto_app"),
+        "DB_USERNAME": os.getenv('DB_USERNAME', 'postgres'),
+        "DB_PASSWORD": os.getenv('DB_PASSWORD', 'bens'),
+        "DB_HOST": os.getenv('DB_HOST', 'localhost'),
+        "DB_PORT": os.getenv('DB_PORT', '5434'),
+        "DB_NAME": os.getenv('DB_NAME', 'crypto_app')
     }
 
 @st.cache_resource(ttl=3600)
@@ -37,32 +44,17 @@ def get_engine(db_params: dict):
 @st.cache_data(ttl=600, show_spinner="Loading historical data...")
 def fetch_historical_data(_engine, symbol: str) -> pd.DataFrame:
     """Fetch historical price data for a given symbol from the database."""
-    # First try yfinance_historical table
     query = """
-        SELECT symbol, datetime, open, high, low, close, volume
+        SELECT symbol, date, open, high, low, close, volume
         FROM yfinance_historical
         WHERE symbol = :symbol
-        ORDER BY datetime DESC
+        ORDER BY date DESC
         LIMIT 1000
     """
     try:
         with _engine.connect() as conn:
             result = conn.execute(text(query), {"symbol": symbol})
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
-            
-            # If no data found, try yfinance_hourly table
-            if df.empty:
-                st.info("No data in yfinance_historical, trying yfinance_hourly...")
-                query_hourly = """
-                    SELECT symbol, date, open, high, low, close, volume,created_at as datetime
-                    FROM yfinance_historical
-                    WHERE symbol = :symbol
-                    ORDER BY date DESC
-                    LIMIT 1000
-                """
-                result = conn.execute(text(query_hourly), {"symbol": symbol})
-                df = pd.DataFrame(result.fetchall(), columns=result.keys())
-            
         return df
     except Exception as e:
         st.error(f"Error fetching historical data: {e}")
@@ -143,16 +135,16 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
         if not df.empty:
             st.subheader("Price History")
             # Convert datetime and sort
-            df['datetime'] = pd.to_datetime(df['datetime'])
-            plot_data = df.sort_values("datetime", ascending=True).copy()
+            df['date'] = pd.to_datetime(df['date'])
+            plot_data = df.sort_values("date", ascending=True).copy()
 
             # Price chart
             fig = px.line(
                 plot_data,
-                x="datetime",
+                x="date",
                 y="close",
                 title=f"{symbol} Price History",
-                labels={"close": "Price (USD)", "datetime": "Date"},
+                labels={"close": "Price (USD)", "date": "Date"},
                 template="plotly_dark",
             )
             fig.update_xaxes(
@@ -171,7 +163,7 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
             # Add moving averages if we have enough data
             if len(plot_data) >= 20:
                 fig.add_scatter(
-                    x=plot_data["datetime"],
+                    x=plot_data["date"],
                     y=plot_data["close"].rolling(20).mean(),
                     mode="lines",
                     name="20-period MA",
@@ -179,7 +171,7 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
                 )
             if len(plot_data) >= 50:
                 fig.add_scatter(
-                    x=plot_data["datetime"],
+                    x=plot_data["date"],
                     y=plot_data["close"].rolling(50).mean(),
                     mode="lines",
                     name="50-period MA",
@@ -191,9 +183,9 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
             st.subheader("Trading Volume")
             fig_vol = px.bar(
                 plot_data,
-                x="datetime",
+                x="date",
                 y="volume",
-                labels={"volume": "Volume (USD)", "datetime": "Date"},
+                labels={"volume": "Volume (USD)", "date": "Date"},
                 color="volume",
                 color_continuous_scale="blues",
             )
@@ -207,8 +199,8 @@ def show_sidebar_status(df: pd.DataFrame):
     st.sidebar.markdown(f"**Last updated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     st.sidebar.markdown(f"**Data points:** {len(df)}")
 
-    if not df.empty and 'datetime' in df.columns:
-        df['datetime'] = pd.to_datetime(df['datetime'])
+    if not df.empty and 'date' in df.columns:
+        df['date'] = pd.to_datetime(df['date'])
         st.sidebar.markdown(
             f"**Time range:** {df['datetime'].min().strftime('%Y-%m-%d')} "
             f"to {df['datetime'].max().strftime('%Y-%m-%d')}"
@@ -244,7 +236,7 @@ def main():
     db_params = load_db_env()
     engine = get_engine(db_params)
 
-    symbol = st.sidebar.selectbox("Symbol", ["BTC-USD", "ETH-USD", "SOL-USD", "BTC", "ETH", "SOL"], index=0)
+    symbol = st.sidebar.selectbox("Symbol",["BTC", "ETH", "SOL"], index=0)
 
     if st.sidebar.button("🔌 Test Connection"):
         test_connection(engine)
