@@ -30,3 +30,4 @@ clean-crypto-app/
 #Ignore files
 password.json
 yf_hourly_streamlit.py
+t.py

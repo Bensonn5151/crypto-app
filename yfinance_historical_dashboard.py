@@ -202,8 +202,8 @@ def show_sidebar_status(df: pd.DataFrame):
     if not df.empty and 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date'])
         st.sidebar.markdown(
-            f"**Time range:** {df['datetime'].min().strftime('%Y-%m-%d')} "
-            f"to {df['datetime'].max().strftime('%Y-%m-%d')}"
+            f"**Time range:** {df['date'].min().strftime('%Y-%m-%d')} "
+            f"to {df['date'].max().strftime('%Y-%m-%d')}"
         )
 
 def show_debug_info(db_params: dict, df: pd.DataFrame, engine):
