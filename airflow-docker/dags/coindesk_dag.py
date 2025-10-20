@@ -100,7 +100,7 @@ def save_coindesk_data():
         df.to_sql(
             'coindesk_prices', 
             engine, 
-            if_exists='append', 
+            if_exists='replace', 
             index=False,
             method='multi'
         )
