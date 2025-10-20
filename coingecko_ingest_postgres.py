@@ -153,7 +153,7 @@ def main():
     create_postgres_table(engine)
 
     # 4. Write DataFrame to Postgres table
-    df.to_sql("silver_coingecko", engine, if_exists="append", index=False)
+    df.to_sql("silver_coingecko", engine, if_exists="replace", index=False)
     print("✅ Data ingested to Postgres table 'silver_coingecko'.")
 
 if __name__ == "__main__":
