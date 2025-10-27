@@ -113,5 +113,4 @@ docker compose up -d
   - CI/CD for DAGs and analytics
   - Observability (OpenLineage/Marquez), data quality checks
 
-###
-INTEGRATION WITH SPARK SOON ...
+
