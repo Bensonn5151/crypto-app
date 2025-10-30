@@ -114,7 +114,7 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
             plot_data,
             x="datetime",
             y="close",
-            color="datetime",
+            #color="datetime",
             title=f"{symbol} Hourly Price History",
             labels={"close": "Price (USD)", "datetime": "datetime"},
             template="plotly_dark",
@@ -133,7 +133,7 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
             plot_data,
             x="datetime",
             y="volume",
-            color="datetime",
+            #color="datetime",
             labels={"volume": "Volume (USD)", "datetime": "Hour"},
             color_continuous_scale="blues",
         )

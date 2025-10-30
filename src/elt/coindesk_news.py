@@ -1,5 +1,6 @@
 import requests
 import json
+import os
 
 def fetch_coindesk_news():
     """Simple function to fetch CoinDesk news and save as JSON"""
@@ -8,6 +9,11 @@ def fetch_coindesk_news():
         'lang': 'EN',
         'limit': 10
     }
+
+    # Define destination folder and file path
+    destination_folder = "/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app"
+    os.makedirs(destination_folder, exist_ok=True)  # ensure folder exists
+    output_path = os.path.join(destination_folder, "coindesk_news_latest.json")
     
     try:
         response = requests.get(url, params=params)
@@ -21,11 +27,12 @@ def fetch_coindesk_news():
             "Err": {}
         }
         
-        # Save to file
-        with open('coindesk_news_latest.json', 'w', encoding='utf-8') as f:
+        # Save to file in the specified folder
+        with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(formatted_data, f, indent=2, ensure_ascii=False)
         
-        print(f"Successfully fetched {len(formatted_data['Data'])} articles")
+        print(f"✅ Successfully fetched {len(formatted_data['Data'])} articles")
+        print(f"📁 Saved to: {output_path}")
         return formatted_data
         
     except Exception as e:
@@ -33,8 +40,10 @@ def fetch_coindesk_news():
             "Data": [],
             "Err": {"message": str(e)}
         }
+        print(f"❌ Error: {e}")
         return error_data
 
-# Run the simple version
+
+# Run the function
 if __name__ == "__main__":
     fetch_coindesk_news()

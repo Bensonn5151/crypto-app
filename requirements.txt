@@ -1,0 +1,17 @@
+requests
+pandas
+streamlit
+plotly
+psycopg2-binary
+sqlalchemy
+python-dotenv
+setuptools
+wheel
+langchain_community
+langchain_huggingface
+groq
+sentence-transformers
+huggingface_hub
+transformers
+numpy<2
+faiss-cpu
