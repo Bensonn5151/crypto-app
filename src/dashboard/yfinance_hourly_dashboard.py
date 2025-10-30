@@ -74,7 +74,7 @@ def show_title_and_description():
     st.markdown(
         """
         <div style="background-color:lightblue;padding:10px;border-radius:5px;margin-bottom:20px">
-            <p style="color:black;">Hourly crypto prices loaded from your own PostgreSQL database (Yahoo Finance source)</p>
+            <p style="color:black;">Hourly crypto prices loaded from database (Yahoo Finance source)</p>
         </div>
         """,
         unsafe_allow_html=True,

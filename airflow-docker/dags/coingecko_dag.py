@@ -5,7 +5,7 @@ import sys
 import os
 import logging
 
-sys.path.append('/opt/airflow/crypto-app')
+sys.path.append('/opt/airflow/crypto-app/src/elt')
 
 def run_coingecko_pipeline():
     logging.info("Starting CoinGecko pipeline execution")

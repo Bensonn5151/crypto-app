@@ -7,7 +7,7 @@ import logging
 import runpy
 
 #sys.path.append('/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app')
-sys.path.append('/opt/airflow/crypto-app')
+sys.path.append('/opt/airflow/crypto-app/src/elt')
 
 
 def run_yf_historical_pipeline():
