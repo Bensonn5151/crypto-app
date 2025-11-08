@@ -30,7 +30,57 @@ crypto-app/
 ├─ app.py                         # Additional app entry (if needed)
 └─ readme.md
 ```
-
+# Proposed folder architecture
+```
+crypto-app/
+│
+├── airflow-docker/                 # All Airflow + Docker setup (compose, env, etc.)
+│   ├── dags/                       # Your Airflow DAGs
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   └── README.md
+│
+├── data/                           # Data lakehouse zones
+│   ├── bronze/                     # Raw ingested data
+│   ├── silver/                     # Cleaned/transformed data
+│   └── gold/                       # Final analytics-ready data
+│
+├── src/                            # Core Python modules
+│   ├── ingestion/                  # Ingestion scripts (APIs, etc.)
+│   │   ├── coingecko_ingest_postgres.py
+│   │   ├── coindesk.py
+│   │   ├── yf_hourly.py
+│   │   └── yf_historical.py
+│   │
+│   ├── transformation/             # Cleaning, feature engineering
+│   ├── analytics/                  # Signal generation, metrics, etc.
+│   ├── dashboards/                 # Streamlit / Plotly dashboards
+│   │   ├── coindesk_dashboard.py
+│   │   ├── yfinance_hourly_dashboard.py
+│   │   ├── yfinance_historical_dashboard.py
+│   │   └── fetch_db_streamlit.py
+│   │
+│   └── utils/                      # Helper functions, configs, constants
+│
+├── frontend/                       # If you’ll keep or rebuild your frontend
+│   └── legacy/                     # Old or experimental frontend code
+│
+├── tests/                          # Unit + notebook tests
+│   ├── tests.ipynb
+│   └── test_scripts/
+│
+├── notebooks/                      # Experimental analysis
+│
+├── docs/                           # Documentation and troubleshooting
+│   ├── troubleshooting_docs.md
+│   └── architecture.md
+│
+├── .env.example                    # Example environment variables
+├── .gitignore
+├── requirements.txt
+├── app.py                          # Main entry point (if needed)
+└── README.md
+```
 ### Quickstart
 1) Clone
 ```bash
