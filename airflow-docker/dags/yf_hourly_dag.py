@@ -7,7 +7,7 @@ import logging
 
 #sys.path.append('/Users/apple/Desktop/DEV/PORTFOLIO/crypto-app')
 
-sys.path.append('/opt/airflow/crypto-app/src/elt')
+sys.path.append('/opt/airflow/crypto-app/src/ingestion')
 
 def run_yf_hourly_pipeline():
     logging.info("Starting yf_hourly pipeline execution")

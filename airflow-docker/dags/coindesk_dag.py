@@ -8,7 +8,7 @@ import os
 import sys
 import logging
 
-sys.path.append('/opt/airflow/crypto-app/src/elt')
+sys.path.append('/opt/airflow/crypto-app/src/ingestion')
 
 def fetch_coindesk_data():
     """Fetch data from CoinDesk API"""
