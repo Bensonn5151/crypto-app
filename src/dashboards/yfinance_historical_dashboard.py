@@ -134,11 +134,20 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
     with col2:
         if not df.empty:
             st.subheader("Price History")
+
+            # Add info about interactive features
+            st.info(
+                "💡 **Chart Controls:** "
+                "Use scroll wheel to zoom Y-axis (price) | "
+                "Drag to zoom X-axis (time) | "
+                "Double-click to reset | "
+                "Use range slider below for time selection"
+            )
             # Convert datetime and sort
             df['date'] = pd.to_datetime(df['date'])
             plot_data = df.sort_values("date", ascending=True).copy()
 
-            # Price chart
+            # Price chart with enhanced Y-axis controls
             fig = px.line(
                 plot_data,
                 x="date",
@@ -147,6 +156,8 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
                 labels={"close": "Price (USD)", "date": "Date"},
                 template="plotly_dark",
             )
+
+            # Configure X-axis with range slider
             fig.update_xaxes(
                 rangeslider_visible=True,
                 rangeselector=dict(
@@ -159,7 +170,45 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
                     ]
                 ),
             )
-            
+
+            # Configure Y-axis with fixed range for scrollable/zoomable behavior
+            fig.update_yaxes(
+                fixedrange=False,  # Allow Y-axis zooming
+                scaleanchor=None,  # Independent scaling
+                autorange=True,    # Auto-adjust to visible data
+            )
+
+            # Enhanced layout configuration for better interactivity
+            fig.update_layout(
+                dragmode='zoom',  # Default drag mode for zooming
+                hovermode='x unified',  # Show all values at same x-position
+                showlegend=True,
+                legend=dict(
+                    yanchor="top",
+                    y=0.99,
+                    xanchor="left",
+                    x=0.01
+                ),
+                # Add scroll zoom configuration
+                modebar=dict(
+                    orientation='v',
+                    bgcolor='rgba(0,0,0,0.5)',
+                ),
+            )
+
+            # Configure scroll zoom on the plot
+            fig.update_traces(
+                hovertemplate='<b>Date</b>: %{x}<br><b>Price</b>: $%{y:,.2f}<extra></extra>'
+            )
+
+            # Display chart with scroll zoom enabled
+            config = {
+                'scrollZoom': True,  # Enable mouse wheel zoom
+                'displayModeBar': True,  # Always show mode bar
+                'modeBarButtonsToAdd': ['drawopenpath', 'eraseshape'],
+                'displaylogo': False,  # Remove Plotly logo
+            }
+
             # Add moving averages if we have enough data
             if len(plot_data) >= 20:
                 fig.add_scatter(
@@ -177,7 +226,7 @@ def display_data_panel(df: pd.DataFrame, symbol: str, engine):
                     name="50-period MA",
                     line=dict(color="purple"),
                 )
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True, config=config)
 
             # Volume chart
             st.subheader("Trading Volume")
