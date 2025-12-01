@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 
 from sqlalchemy import create_engine, text
 
+from src.config.coins import CoinRegistry
+
 load_dotenv()
 
 # --- Postgres details ---
@@ -20,7 +22,9 @@ DB_NAME = os.getenv('DB_NAME', 'crypto_app')
 PG_URL = f"postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # --- Improved ingestion function ---
-def get_crypto_data(vs_currency="usd", coin_list=["bitcoin", "ethereum", "solana"], save_raw=True, retries=3):
+def get_crypto_data(vs_currency="usd", coin_list=None, save_raw=True, retries=3):
+    if coin_list is None:
+        coin_list = CoinRegistry.get_cg_ids()
     url = "https://api.coingecko.com/api/v3/coins/markets"
     params = {
         "vs_currency": vs_currency,
