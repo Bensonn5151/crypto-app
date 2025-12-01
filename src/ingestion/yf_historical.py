@@ -5,15 +5,13 @@ from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from datetime import datetime
 
+from src.config.coins import CoinRegistry
+
 # -------------------------------------------------------
 # Symbols to track
 # -------------------------------------------------------
 def get_symbols():
-    return {
-        "BTC-USD": "BTC",
-        "ETH-USD": "ETH", 
-        "SOL-USD": "SOL",
-    }
+    return CoinRegistry.get_yf_map()
 
 # -------------------------------------------------------
 # Fetch DAILY historical data from yfinance

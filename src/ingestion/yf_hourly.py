@@ -6,15 +6,13 @@ from sqlalchemy import create_engine, text, inspect
 import psycopg2
 from psycopg2.extras import execute_values
 
+from src.config.coins import CoinRegistry
+
 # -------------------------
 # 1. Symbols
 # -------------------------
 def get_symbols():
-    return {
-        "BTC-USD": "BTC",
-        "ETH-USD": "ETH",
-        "SOL-USD": "SOL"
-    }
+    return CoinRegistry.get_yf_map()
 
 # -------------------------
 # 2. Fetch Data
