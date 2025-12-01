@@ -9,6 +9,8 @@ import os
 from sqlalchemy import create_engine, text
 import json
 
+from src.config.coins import CoinRegistry
+
 # --------------------------
 # CONFIG & SETUP
 # --------------------------
@@ -47,8 +49,8 @@ def get_db_engine():
 def fetch_realtime_data():
     """Fetch real-time data from CoinDesk API"""
     params = {
-        "market": "ccix",                                                        
-        "instruments": "BTC-USD,ETH-USD,SOL-USD,ADA-USD",
+        "market": "ccix",
+        "instruments": CoinRegistry.get_cd_instruments(),
         "api_key": API_KEY
     }
     
@@ -202,7 +204,7 @@ refresh_interval = st.sidebar.slider(
 auto_refresh = st.sidebar.checkbox("Enable Auto Refresh", value=True)
 
 # Coin selection
-available_coins = ["BTC", "ETH", "SOL", "ADA"]
+available_coins = [c.symbol for c in CoinRegistry.get_all()]
 selected_coins = st.sidebar.multiselect(
     "Select Cryptocurrencies",
     options=available_coins,
