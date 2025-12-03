@@ -16,6 +16,7 @@ class CoinRegistry:
         Coin("BTC", "Bitcoin", "BTC-USD", "bitcoin", "BTC-USD"),
         Coin("ETH", "Ethereum", "ETH-USD", "ethereum", "ETH-USD"),
         Coin("SOL", "Solana", "SOL-USD", "solana", "SOL-USD"),
+        Coin("XRP", "Ripple", "XRP-USD", "ripple", "XRP-USD"),
     ]
 
     @classmethod
